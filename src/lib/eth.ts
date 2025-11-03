@@ -30,11 +30,23 @@ export async function getSigner(): Promise<JsonRpcSigner> {
   return await provider.getSigner()
 }
 
+// ✅ 올바르게 수정된 ensureNetwork()
 export async function ensureNetwork(): Promise<void> {
-  const provider = getBrowserProvider()
-  const network = await provider.getNetwork()
-  if (Number(network.chainId) !== chainId) {
-    throw new Error(`네트워크가 올바르지 않습니다. 필요한 체인 ID: ${chainId}`)
+  const injected = getInjectedProvider()
+  if (!injected || !('request' in injected)) {
+    throw new Error('지갑이 감지되지 않았습니다.')
+  }
+
+  // 현재 체인 ID 직접 조회 (ethers provider 기본값 문제 방지)
+  const currentChainHex = await injected.request({ method: 'eth_chainId' })
+  const currentChain = parseInt(currentChainHex as string, 16)
+
+  if (currentChain !== chainId) {
+    // 네트워크 자동 전환 요청
+    await injected.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: '0xaa36a7' }], // 11155111 (Sepolia)
+    })
   }
 }
 
@@ -43,12 +55,15 @@ export async function connectWallet(): Promise<string> {
   if (!injected || !('request' in injected)) {
     throw new Error('EIP-1193 provider를 찾을 수 없습니다.')
   }
+
   const accounts = (await injected.request({
     method: 'eth_requestAccounts',
   })) as string[]
+
   if (!accounts || accounts.length === 0) {
     throw new Error('지갑 계정을 가져올 수 없습니다.')
   }
+
   return accounts[0]
 }
 
