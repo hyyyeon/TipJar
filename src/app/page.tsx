@@ -1,4 +1,5 @@
 'use client'
+
 import { useEffect, useMemo, useState } from 'react'
 import {
   connectWallet,
@@ -21,7 +22,6 @@ export default function Home() {
 
   useEffect(() => {
     refreshBasics()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function getErrorMessage(err: unknown): string {
@@ -42,9 +42,7 @@ export default function Home() {
       const [b, o] = await Promise.all([readContractBalance(), readOwner()])
       setBalanceEth(b)
       setOwner(o)
-    } catch (e) {
-      // 무시: 초기 로드에서 지갑이 없어도 됨
-    }
+    } catch {}
   }
 
   async function onConnect() {
@@ -99,9 +97,18 @@ export default function Home() {
   )
 
   return (
-    <div className="font-sans min-h-screen p-8 sm:p-20 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Tip Jar</h1>
+<div className="font-sans min-h-screen p-8 sm:p-20 max-w-4xl mx-auto bg-[#eaf4ff]">
 
+      {/* Header */}
+<div className="flex items-center justify-between mb-6">
+  <h1 className="text-2xl font-bold">Tip Jar</h1>
+  <div className="px-3 py-1 border rounded-md text-sm text-gray-700 bg-gray-50">
+    윤지현 (92313489)
+  </div>
+</div>
+
+
+      {/* Wallet */}
       <section className="mb-6 p-4 border rounded-md">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -110,29 +117,34 @@ export default function Home() {
               {account ?? '연결되지 않음'}
             </div>
           </div>
+
           <button
             onClick={onConnect}
             disabled={loading}
-            className="rounded-lg px-4 py-2.5 bg-gradient-to-r from-black to-gray-800 text-white shadow hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50"
+className="rounded-md px-3 py-2 text-white bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50"
           >
             {account ? '지갑 새로고침' : '지갑 연결'}
           </button>
         </div>
+
         <div className="mt-3 text-sm text-gray-600">
           네트워크: {chainName ?? '-'} ({chainId ?? '-'})
         </div>
       </section>
 
+      {/* Contract Balance */}
       <section className="mb-6 p-4 border rounded-md">
         <div className="text-sm text-gray-500">컨트랙트 잔액 (ETH)</div>
         <div className="text-xl font-semibold">{balanceEth}</div>
       </section>
 
+      {/* Owner */}
       <section className="mb-6 p-4 border rounded-md">
         <div className="text-sm text-gray-500">오너</div>
         <div className="font-mono break-all">{owner || '-'}</div>
       </section>
 
+      {/* Input */}
       <section className="mb-6 p-4 border rounded-md">
         <div className="mb-3">
           <label className="block text-sm text-gray-500 mb-1">
@@ -145,19 +157,21 @@ export default function Home() {
             placeholder="0.01"
           />
         </div>
+
         <div className="flex gap-3">
           <button
             onClick={onSendTip}
             disabled={loading}
-            className="rounded-md px-3 py-2 text-white bg-blue-600 disabled:opacity-50"
+className="rounded-md px-3 py-2 text-white bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50"
           >
             Tip 보내기
           </button>
+
           {isOwner && (
             <button
               onClick={onWithdraw}
               disabled={loading}
-              className="rounded-md px-3 py-2 text-white bg-emerald-600 disabled:opacity-50"
+className="rounded-md px-3 py-2 text-white bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50"
             >
               잔액 인출
             </button>
@@ -165,6 +179,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Status message */}
       {message && (
         <div className="mt-4 p-3 border rounded-md bg-gray-50 text-sm break-all">
           {message}
